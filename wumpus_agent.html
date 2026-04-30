@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wumpus Logic Agent</title>
+<style>
+  /* ── CSS will be added in next commit ── */
+  body { background: #0a0e1a; color: #c8deff; font-family: monospace; padding: 20px; }
+</style>
+</head>
+<body>
+
+<h1>WUMPUS LOGIC AGENT</h1>
+<div class="subtitle">KNOWLEDGE-BASED PROPOSITIONAL INFERENCE ENGINE</div>
+
+<div class="main-layout">
+
+  <!-- ═══ LEFT: Grid + Controls ═══ -->
+  <div>
+
+    <!-- Config Panel -->
+    <div class="panel" style="margin-bottom:12px">
+      <div class="panel-title">⚙ ENVIRONMENT CONFIG</div>
+      <div class="config-row">
+        <label>ROWS</label>
+        <input type="number" id="inp-rows" value="4" min="3" max="6">
+        <label>COLS</label>
+        <input type="number" id="inp-cols" value="4" min="3" max="6">
+        <label>PITS</label>
+        <input type="number" id="inp-pits" value="3" min="1" max="8">
+        <button class="btn btn-primary" onclick="startGame()">GENERATE WORLD</button>
+      </div>
+
+      <!-- Color Legend -->
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:rgba(0,200,255,0.13);border-color:#00c8ff"></div>Agent
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:rgba(0,255,136,0.10);border-color:#00ff88"></div>Safe
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:rgba(255,51,85,0.13);border-color:#ff3355"></div>Pit / Wumpus
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#2a3a55;border-color:#1e3a5f"></div>Unknown
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:#1a2a3a;border-color:#2a4a6a"></div>Visited
+        </div>
+      </div>
+    </div>
+
+    <!-- Grid Panel -->
+    <div class="panel">
+      <div class="panel-title">🗺 WUMPUS WORLD GRID</div>
+      <div id="grid-container">
+        <div id="grid"></div>
+      </div>
+      <div id="status-bar" class="status-bar s-playing">AWAITING INITIALIZATION...</div>
+      <p class="hint">► Click any adjacent cell to move the agent manually.</p>
+      <div class="controls">
+        <button class="btn btn-secondary" id="btn-step" onclick="autoStep()" disabled>AUTO STEP</button>
+        <button class="btn btn-warn" onclick="revealAll()">REVEAL ALL</button>
+      </div>
+    </div>
+
+  </div><!-- /left column -->
+
+  <!-- ═══ RIGHT: Sidebar Panels ═══ -->
+  <div class="sidebar">
+
+    <!-- Real-Time Metrics -->
+    <div class="panel">
+      <div class="panel-title">📊 REAL-TIME METRICS</div>
+      <div class="metric">
+        <span class="metric-label">INFERENCE STEPS</span>
+        <span class="metric-value" id="m-steps">0</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">CELLS VISITED</span>
+        <span class="metric-value" id="m-visited">0</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">SAFE DEDUCED</span>
+        <span class="metric-value" id="m-safe">0</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">DANGER DEDUCED</span>
+        <span class="metric-value" id="m-danger">0</span>
+      </div>
+      <div class="metric">
+        <span class="metric-label">KB CLAUSES</span>
+        <span class="metric-value" id="m-clauses">0</span>
+      </div>
+    </div>
+
+    <!-- Current Percepts -->
+    <div class="panel">
+      <div class="panel-title">👁 CURRENT PERCEPTS</div>
+      <div id="percept-display">
+        <p class="percept-none">No percepts yet.</p>
+      </div>
+    </div>
+
+    <!-- Knowledge Base Log -->
+    <div class="panel">
+      <div class="panel-title">📋 KNOWLEDGE BASE LOG</div>
+      <div id="kb-log" class="log-box">
+        <div class="log-default">KB empty. Generate world to begin.</div>
+      </div>
+    </div>
+
+    <!-- Inference Engine Log -->
+    <div class="panel">
+      <div class="panel-title">🔍 INFERENCE ENGINE LOG</div>
+      <div id="inf-log" class="log-box">
+        <div class="log-default">Waiting for agent movement...</div>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+</div><!-- /main-layout -->
+
+<!-- JavaScript logic will be added in commits 3 & 4 -->
+<script>
+  // Placeholder — full logic added in next commits
+  console.log("Wumpus World HTML structure ready.");
+</script>
+
+</body>
+</html>
