@@ -5,8 +5,224 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Wumpus Logic Agent</title>
 <style>
-  /* ── CSS will be added in next commit ── */
-  body { background: #0a0e1a; color: #c8deff; font-family: monospace; padding: 20px; }
+  /* ════════════════════════════════════════════
+     COMMIT 2 — Full CSS Styling
+     Adds: fonts, color variables, layout, grid
+     cells, sidebar, logs, buttons, status bar
+  ════════════════════════════════════════════ */
+
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  /* ── CSS Custom Properties (like Python constants) ── */
+  :root {
+    --bg:      #0a0e1a;   /* page background */
+    --panel:   #0f1626;   /* card/panel background */
+    --border:  #1e3a5f;   /* border color */
+    --safe:    #00ff88;   /* green = safe cell */
+    --danger:  #ff3355;   /* red   = dangerous cell */
+    --unknown: #2a3a55;   /* grey  = unknown cell */
+    --visited: #1a2a3a;   /* dark  = visited cell */
+    --text:    #c8deff;   /* main text */
+    --accent:  #00c8ff;   /* cyan highlight */
+    --warn:    #ffaa00;   /* orange warning */
+    --gold:    #ffd700;   /* gold color */
+  }
+
+  /* ── RESET & BASE ── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    padding: 20px;
+    /* subtle radial glow in corners */
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(0,200,255,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(0,255,136,0.03) 0%, transparent 50%);
+  }
+
+  /* ── TITLE ── */
+  h1 {
+    font-family: 'Orbitron', monospace;
+    color: var(--accent);
+    font-size: 1.6rem;
+    text-align: center;
+    letter-spacing: 4px;
+    margin-bottom: 4px;
+    text-shadow: 0 0 20px rgba(0,200,255,0.5);
+  }
+
+  .subtitle {
+    text-align: center;
+    color: #5a7a9a;
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+  }
+
+  /* ── MAIN 2-COLUMN LAYOUT ── */
+  .main-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;  /* left fills space, right = 300px sidebar */
+    gap: 16px;
+    max-width: 1150px;
+    margin: 0 auto;
+  }
+
+  /* ── PANEL (card) ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 14px;
+  }
+
+  .panel-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* ── CONFIG ROW ── */
+  .config-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .config-row label { font-size: 0.75rem; color: #7a9ab8; }
+  .config-row input[type=number] {
+    width: 60px;
+    background: #0a1525;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono';
+    font-size: 0.85rem;
+    padding: 4px 8px;
+    border-radius: 2px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: 'Orbitron', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 2px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary           { background: var(--accent); color: #000; }
+  .btn-primary:hover     { background: #00aadd; box-shadow: 0 0 12px rgba(0,200,255,0.4); }
+  .btn-secondary         { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+  .btn-secondary:hover   { background: rgba(0,200,255,0.1); }
+  .btn-warn              { background: var(--warn); color: #000; }
+  .btn-warn:hover        { background: #dd9900; }
+  .btn:disabled          { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── GRID CONTAINER ── */
+  #grid-container { display: flex; justify-content: center; margin: 10px 0; }
+  #grid { display: grid; gap: 2px; }
+
+  /* ── GRID CELLS ── */
+  .cell {
+    width: 78px; height: 78px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.3s;
+    position: relative;
+    background: var(--unknown);
+    user-select: none;
+  }
+  .cell:hover            { border-color: var(--accent); }
+  .cell.visited          { background: var(--visited); border-color: #2a4a6a; }
+  .cell.safe             { background: rgba(0,255,136,0.10); border-color: var(--safe); }
+  .cell.danger           { background: rgba(255,51,85,0.13); border-color: var(--danger); }
+  .cell.agent            { background: rgba(0,200,255,0.13); border-color: var(--accent); }
+
+  /* Parts inside each cell */
+  .cell-icon    { font-size: 1.5rem; line-height: 1; }
+  .cell-label   { font-size: 0.48rem; color: #5a7a9a; margin-top: 2px; letter-spacing: 1px; }
+  .cell-percept { font-size: 0.65rem; margin-top: 2px; }
+  .cell-coord   { position: absolute; top: 2px; left: 4px; font-size: 0.4rem; color: #3a5a7a; }
+
+  /* ── LEGEND ── */
+  .legend      { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 0.65rem; }
+  .legend-dot  { width: 10px; height: 10px; border-radius: 2px; border: 1px solid; flex-shrink: 0; }
+
+  /* ── SIDEBAR ── */
+  .sidebar { display: flex; flex-direction: column; gap: 12px; }
+
+  /* ── METRICS ── */
+  .metric {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0; border-bottom: 1px solid #1a2a3a;
+  }
+  .metric:last-child { border-bottom: none; }
+  .metric-label { font-size: 0.65rem; color: #5a7a9a; }
+  .metric-value { font-family: 'Orbitron', monospace; font-size: 0.9rem; color: var(--accent); }
+
+  /* ── PERCEPT ITEMS ── */
+  .percept-item {
+    padding: 3px 8px;
+    border-left: 2px solid var(--accent);
+    margin-bottom: 4px;
+    background: rgba(0,200,255,0.05);
+    font-size: 0.7rem;
+  }
+  .percept-none { color: #3a5a7a; font-size: 0.7rem; }
+
+  /* ── LOG BOXES ── */
+  .log-box {
+    max-height: 160px;
+    overflow-y: auto;
+    font-size: 0.62rem;
+    line-height: 1.9;
+  }
+  .log-box::-webkit-scrollbar       { width: 4px; }
+  .log-box::-webkit-scrollbar-track { background: #0a1020; }
+  .log-box::-webkit-scrollbar-thumb { background: var(--border); }
+
+  /* Log entry color classes */
+  .log-default { color: #4a7a9a; }
+  .log-new     { color: var(--accent); }
+  .log-safe    { color: var(--safe); }
+  .log-danger  { color: var(--danger); }
+  .log-unknown { color: #7a6a3a; }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    text-align: center; font-size: 0.7rem;
+    padding: 6px; border-radius: 2px; margin-top: 6px;
+  }
+  .s-playing { background: rgba(0,200,255,0.08); color: var(--accent); border: 1px solid var(--border); }
+  .s-win     { background: rgba(0,255,136,0.13); color: var(--safe);   border: 1px solid var(--safe); }
+  .s-dead    { background: rgba(255,51,85,0.13); color: var(--danger); border: 1px solid var(--danger); }
+
+  /* ── MISC ── */
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .hint     { font-size: 0.62rem; color: #3a5a7a; margin-top: 6px; }
+
+  /* ── RESPONSIVE: single column on small screens ── */
+  @media (max-width: 800px) {
+    .main-layout { grid-template-columns: 1fr; }
+    .cell { width: 58px; height: 58px; }
+  }
 </style>
 </head>
 <body>
@@ -18,8 +234,6 @@
 
   <!-- ═══ LEFT: Grid + Controls ═══ -->
   <div>
-
-    <!-- Config Panel -->
     <div class="panel" style="margin-bottom:12px">
       <div class="panel-title">⚙ ENVIRONMENT CONFIG</div>
       <div class="config-row">
@@ -31,33 +245,28 @@
         <input type="number" id="inp-pits" value="3" min="1" max="8">
         <button class="btn btn-primary" onclick="startGame()">GENERATE WORLD</button>
       </div>
-
-      <!-- Color Legend -->
       <div class="legend">
         <div class="legend-item">
-          <div class="legend-dot" style="background:rgba(0,200,255,0.13);border-color:#00c8ff"></div>Agent
+          <div class="legend-dot" style="background:rgba(0,200,255,0.13);border-color:var(--accent)"></div>Agent
         </div>
         <div class="legend-item">
-          <div class="legend-dot" style="background:rgba(0,255,136,0.10);border-color:#00ff88"></div>Safe
+          <div class="legend-dot" style="background:rgba(0,255,136,0.10);border-color:var(--safe)"></div>Safe
         </div>
         <div class="legend-item">
-          <div class="legend-dot" style="background:rgba(255,51,85,0.13);border-color:#ff3355"></div>Pit / Wumpus
+          <div class="legend-dot" style="background:rgba(255,51,85,0.13);border-color:var(--danger)"></div>Pit/Wumpus
         </div>
         <div class="legend-item">
-          <div class="legend-dot" style="background:#2a3a55;border-color:#1e3a5f"></div>Unknown
+          <div class="legend-dot" style="background:var(--unknown);border-color:var(--border)"></div>Unknown
         </div>
         <div class="legend-item">
-          <div class="legend-dot" style="background:#1a2a3a;border-color:#2a4a6a"></div>Visited
+          <div class="legend-dot" style="background:var(--visited);border-color:#2a4a6a"></div>Visited
         </div>
       </div>
     </div>
 
-    <!-- Grid Panel -->
     <div class="panel">
       <div class="panel-title">🗺 WUMPUS WORLD GRID</div>
-      <div id="grid-container">
-        <div id="grid"></div>
-      </div>
+      <div id="grid-container"><div id="grid"></div></div>
       <div id="status-bar" class="status-bar s-playing">AWAITING INITIALIZATION...</div>
       <p class="hint">► Click any adjacent cell to move the agent manually.</p>
       <div class="controls">
@@ -65,13 +274,10 @@
         <button class="btn btn-warn" onclick="revealAll()">REVEAL ALL</button>
       </div>
     </div>
+  </div>
 
-  </div><!-- /left column -->
-
-  <!-- ═══ RIGHT: Sidebar Panels ═══ -->
+  <!-- ═══ RIGHT: Sidebar ═══ -->
   <div class="sidebar">
-
-    <!-- Real-Time Metrics -->
     <div class="panel">
       <div class="panel-title">📊 REAL-TIME METRICS</div>
       <div class="metric">
@@ -95,40 +301,29 @@
         <span class="metric-value" id="m-clauses">0</span>
       </div>
     </div>
-
-    <!-- Current Percepts -->
     <div class="panel">
       <div class="panel-title">👁 CURRENT PERCEPTS</div>
-      <div id="percept-display">
-        <p class="percept-none">No percepts yet.</p>
-      </div>
+      <div id="percept-display"><p class="percept-none">No percepts yet.</p></div>
     </div>
-
-    <!-- Knowledge Base Log -->
     <div class="panel">
       <div class="panel-title">📋 KNOWLEDGE BASE LOG</div>
       <div id="kb-log" class="log-box">
         <div class="log-default">KB empty. Generate world to begin.</div>
       </div>
     </div>
-
-    <!-- Inference Engine Log -->
     <div class="panel">
       <div class="panel-title">🔍 INFERENCE ENGINE LOG</div>
       <div id="inf-log" class="log-box">
         <div class="log-default">Waiting for agent movement...</div>
       </div>
     </div>
+  </div>
 
-  </div><!-- /sidebar -->
-
-</div><!-- /main-layout -->
+</div>
 
 <!-- JavaScript logic will be added in commits 3 & 4 -->
 <script>
-  // Placeholder — full logic added in next commits
-  console.log("Wumpus World HTML structure ready.");
+  console.log("CSS styling complete. JS logic comes next.");
 </script>
-
 </body>
 </html>
